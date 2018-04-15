@@ -1,0 +1,11 @@
+name: 'Default comments'
+description: 'Provides Default comments comment type and related configuration. Allows commenting on content'
+type: module
+core: 8.x
+dependencies:
+  - comment
+  - field
+  - jsonapi_extras
+  - rdf
+  - text
+package: 'Blog service'

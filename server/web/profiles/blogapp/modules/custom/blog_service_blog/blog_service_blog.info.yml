@@ -1,0 +1,13 @@
+name: Blog
+description: 'Provides Blog content type and related configuration. Our content type for posts of the blog'
+type: module
+core: 8.x
+dependencies:
+  - field
+  - jsonapi_extras
+  - menu_ui
+  - node
+  - path
+  - text
+  - user
+package: 'Blog service'

@@ -1,0 +1,16 @@
+name: Site
+description: 'Provides site components.'
+type: module
+core: 8.x
+dependencies:
+  - block_content
+  - ckeditor
+  - contact
+  - editor
+  - field
+  - filter
+  - jsonapi_extras
+  - rdf
+  - taxonomy
+  - text
+package: 'Blog service'
