@@ -19,10 +19,6 @@ type alias Post =
     String
 
 
-type Msg
-    = NoOp
-
-
 model : Model
 model =
     { posts = [ "First blog", "Second blog" ]
@@ -30,9 +26,15 @@ model =
     }
 
 
-update : Msg -> Model -> Model
+type Msg
+    = NavigateTo Page
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    model
+    case msg of
+        NavigateTo page ->
+            ( { model | activePage = page }, Cmd.none )
 
 
 view : Model -> Html Msg
