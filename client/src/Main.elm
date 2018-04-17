@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Html exposing (Html, div, text)
+import Html.Events exposing (onClick)
 import List
 
 
@@ -39,6 +40,18 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
+    case model.activePage of
+        BlogList ->
+            viewBlogList model.posts
+
+        Blog ->
+            div
+                [ onClick <| NavigateTo BlogList ]
+                [ text "This is a single blog post" ]
+
+
+viewBlogList : List Post -> Html Msg
+viewBlogList posts =
     div
         []
         (List.map viewPost model.posts)
@@ -47,7 +60,7 @@ view model =
 viewPost : Post -> Html Msg
 viewPost post =
     div
-        []
+        [ onClick <| NavigateTo Blog ]
         [ text post ]
 
 
