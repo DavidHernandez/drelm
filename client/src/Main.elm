@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, text, beginnerProgram)
 import Html.Events exposing (onClick)
 import List
 
@@ -31,11 +31,11 @@ type Msg
     = NavigateTo Page
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Model
 update msg model =
     case msg of
         NavigateTo page ->
-            ( { model | activePage = page }, Cmd.none )
+            { model | activePage = page }
 
 
 view : Model -> Html Msg
@@ -64,5 +64,10 @@ viewPost post =
         [ text post ]
 
 
+main : Program Never Model Msg
 main =
-    view model
+    beginnerProgram
+        { model = model
+        , view = view
+        , update = update
+        }
