@@ -1,19 +1,24 @@
 module Main exposing (main)
 
+import Dict exposing (Dict)
 import Html exposing (Html, div, text, beginnerProgram)
 import Html.Events exposing (onClick)
 import List
 
 
 type alias Model =
-    { posts : List Post
+    { posts : Dict PostId Post
     , activePage : Page
     }
 
 
 type Page
     = BlogList
-    | Blog
+    | Blog PostId
+
+
+type alias PostId =
+    Int
 
 
 type alias Post =
@@ -22,7 +27,7 @@ type alias Post =
 
 model : Model
 model =
-    { posts = [ "First blog", "Second blog" ]
+    { posts = Dict.fromList [ ( 1, "First blog" ), ( 2, "Second blog" ) ]
     , activePage = BlogList
     }
 
@@ -44,23 +49,34 @@ view model =
         BlogList ->
             viewBlogList model.posts
 
-        Blog ->
-            div
-                [ onClick <| NavigateTo BlogList ]
-                [ text "This is a single blog post" ]
+        Blog postId ->
+            let
+                post =
+                    Dict.get postId model.posts
+            in
+                case post of
+                    Just aPost ->
+                        div
+                            [ onClick <| NavigateTo BlogList ]
+                            [ text aPost ]
+
+                    Nothing ->
+                        div
+                            [ onClick <| NavigateTo BlogList ]
+                            [ text "Blog post not found" ]
 
 
-viewBlogList : List Post -> Html Msg
+viewBlogList : Dict PostId Post -> Html Msg
 viewBlogList posts =
     div
         []
-        (List.map viewPost model.posts)
+        (Dict.map viewPost model.posts |> Dict.values)
 
 
-viewPost : Post -> Html Msg
-viewPost post =
+viewPost : PostId -> Post -> Html Msg
+viewPost postId post =
     div
-        [ onClick <| NavigateTo Blog ]
+        [ onClick <| NavigateTo <| Blog postId ]
         [ text post ]
 
 
