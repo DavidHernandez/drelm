@@ -23,7 +23,7 @@
         "drupal/core": "~8.5",
         "drupal/features": "^3.7",
         "drupal/jsonapi": "^1.14",
-        "drupal/jsonapi_extras": "1.x",
+        "drupal/jsonapi_extras": "2.x",
         "drush/drush": "^9.0.0",
         "vlucas/phpdotenv": "^2.4",
         "webflo/drupal-finder": "^1.0.0",
