@@ -1,7 +1,7 @@
 module Main exposing (main)
 
 import Dict exposing (Dict)
-import Html exposing (Html, div, text, beginnerProgram)
+import Html exposing (Html, a, div, h2, text, beginnerProgram)
 import Html.Events exposing (onClick)
 import List
 
@@ -22,13 +22,35 @@ type alias PostId =
 
 
 type alias Post =
-    String
+    { id : PostId
+    , title : String
+    , body : String
+    , created : String
+    }
 
 
 model : Model
 model =
-    { posts = Dict.fromList [ ( 1, "First blog" ), ( 2, "Second blog" ) ]
+    { posts = Dict.fromList [ ( 1, firstPost ), ( 2, secondPost ) ]
     , activePage = BlogList
+    }
+
+
+firstPost : Post
+firstPost =
+    { id = 1
+    , title = "First blog"
+    , body = "This is the body of the first blog post"
+    , created = "2018-04-18 19:00"
+    }
+
+
+secondPost : Post
+secondPost =
+    { id = 2
+    , title = "Second blog"
+    , body = "This is the body of the another blog post"
+    , created = "2018-05-18 20:00"
     }
 
 
@@ -57,8 +79,12 @@ view model =
                 case post of
                     Just aPost ->
                         div
-                            [ onClick <| NavigateTo BlogList ]
-                            [ text aPost ]
+                            []
+                            [ h2 [] [ text aPost.title ]
+                            , div [] [ text aPost.created ]
+                            , div [] [ text aPost.body ]
+                            , a [ onClick <| NavigateTo BlogList ] [ text "Go back" ]
+                            ]
 
                     Nothing ->
                         div
@@ -70,14 +96,14 @@ viewBlogList : Dict PostId Post -> Html Msg
 viewBlogList posts =
     div
         []
-        (Dict.map viewPost model.posts |> Dict.values)
+        (Dict.map viewPostTeaser model.posts |> Dict.values)
 
 
-viewPost : PostId -> Post -> Html Msg
-viewPost postId post =
+viewPostTeaser : PostId -> Post -> Html Msg
+viewPostTeaser postId post =
     div
         [ onClick <| NavigateTo <| Blog postId ]
-        [ text post ]
+        [ text post.title ]
 
 
 main : Program Never Model Msg
