@@ -1,28 +1,29 @@
 module Main exposing (main)
 
-import Dict exposing (Dict)
-import Html exposing (Html, a, div, h2, text, beginnerProgram)
+import Html exposing (Html, a, div, h2, text, program)
+import Http
 import Html.Events exposing (onClick)
-import Json.Decode exposing (Decoder, int, string, dict)
+import Json.Decode as Decode exposing (Decoder, decodeString, int, string, list)
 import Json.Decode.Pipeline exposing (decode, required)
 import List
+import Task exposing (Task)
 
 
 type alias Model =
-    { posts : WebData PostList
+    { posts : WebData String PostList
     , activePage : Page
     }
 
 
-type WebData data
+type WebData error data
     = NotAsked
     | Loading
-    | Error
+    | Error error
     | Success data
 
 
 type alias PostList =
-    Dict PostId Post
+    List Post
 
 
 type Page
@@ -31,7 +32,7 @@ type Page
 
 
 type alias PostId =
-    String
+    Int
 
 
 type alias Post =
@@ -49,9 +50,16 @@ model =
     }
 
 
+init : ( Model, Cmd Msg )
+init =
+    ( model
+    , fetchPosts
+    )
+
+
 firstPost : Post
 firstPost =
-    { id = "1"
+    { id = 1
     , title = "First blog"
     , body = "This is the body of the first blog post"
     , created = "2018-04-18 19:00"
@@ -60,7 +68,7 @@ firstPost =
 
 secondPost : Post
 secondPost =
-    { id = "2"
+    { id = 2
     , title = "Second blog"
     , body = "This is the body of the another blog post"
     , created = "2018-05-18 20:00"
@@ -69,13 +77,24 @@ secondPost =
 
 type Msg
     = NavigateTo Page
+    | FetchPosts (Result Http.Error PostList)
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NavigateTo page ->
-            { model | activePage = page }
+            ( { model | activePage = page }, Cmd.none )
+
+        FetchPosts (Ok posts) ->
+            ( { model | posts = Success posts }, Cmd.none )
+
+        FetchPosts (Err err) ->
+            let
+                _ =
+                    Debug.log "Error" err
+            in
+                ( { model | posts = Error "error" }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -95,7 +114,9 @@ view model =
                 Blog postId ->
                     let
                         post =
-                            Dict.get postId posts
+                            List.head posts
+
+                        -- List.filter by postId
                     in
                         case post of
                             Just aPost ->
@@ -112,42 +133,79 @@ view model =
                                     [ onClick <| NavigateTo BlogList ]
                                     [ text "Blog post not found" ]
 
-        Error ->
-            div [] [ text "Error loading the data" ]
+        Error error ->
+            div [] [ text error ]
 
 
 viewBlogList : PostList -> Html Msg
 viewBlogList posts =
     div
         []
-        (Dict.map viewPostTeaser posts |> Dict.values)
+        (List.map viewPostTeaser posts)
 
 
-viewPostTeaser : PostId -> Post -> Html Msg
-viewPostTeaser postId post =
+viewPostTeaser : Post -> Html Msg
+viewPostTeaser post =
     div
-        [ onClick <| NavigateTo <| Blog postId ]
+        [ onClick <| NavigateTo <| Blog post.id ]
         [ text post.title ]
+
+
+fetchPosts : Cmd Msg
+fetchPosts =
+    let
+        url =
+            "http://drelm.local/jsonapi/blog"
+    in
+        Http.send FetchPosts (httpGet url postListDecoder)
+
+
+httpGet : String -> Decoder value -> Http.Request value
+httpGet url decoder =
+    Http.request
+        { method = "GET"
+        , headers =
+            [ Http.header "Access-Control-Allow-Origin" "*"
+            , Http.header "Content-type" "application/vnd.api+json"
+            , Http.header "Accept" "application/vnd.api+json"
+            , Http.header "Origin" "http://drelm.local"
+            , Http.header "Access-Control-Allow-Methods" "GET"
+            , Http.header "Access-Control-Request-Headers" "X-Custom-Header"
+            ]
+        , url = url
+        , body = Http.emptyBody
+        , expect = Http.expectJson decoder
+        , timeout = Nothing
+        , withCredentials = False
+        }
 
 
 postListDecoder : Decoder PostList
 postListDecoder =
-    dict postDecoder
+    Decode.at [ "data" ] (list postDecoder)
 
 
 postDecoder : Decoder Post
 postDecoder =
-    decode Post
-        |> required "id" string
-        |> required "title" string
-        |> required "body" string
-        |> required "created" string
+    Decode.at [ "attributes" ]
+        (decode Post
+            |> required "id" int
+            |> required "title" string
+            |> required "body" string
+            |> required "created" string
+        )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
 
 
 main : Program Never Model Msg
 main =
-    beginnerProgram
-        { model = model
+    program
+        { init = init
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
