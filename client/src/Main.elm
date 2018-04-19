@@ -114,9 +114,8 @@ view model =
                 Blog postId ->
                     let
                         post =
-                            List.head posts
-
-                        -- List.filter by postId
+                            List.filter (\post -> post.id == postId) posts
+                                |> List.head
                     in
                         case post of
                             Just aPost ->
