@@ -17,7 +17,6 @@ type alias Model =
 
 type WebData error data
     = NotAsked
-    | Loading
     | Error error
     | Success data
 
@@ -101,9 +100,6 @@ view : Model -> Html Msg
 view model =
     case model.posts of
         NotAsked ->
-            div [] [ text "Loading..." ]
-
-        Loading ->
             div [] [ text "Loading..." ]
 
         Success posts ->
